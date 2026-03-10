@@ -23,13 +23,17 @@ def extract_audio_from_video(video_path: str) -> str:
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(f"ffmpeg failed: {result.stderr}")
+        print(f"ffmpeg audio extraction warning: {result.stderr}")
+        return video_path  # If ffmpeg extraction fails, just let Whisper try the raw WebM/MP4
     return audio_path
 
 
-def transcribe_audio(audio_path: str, model_size: str = "base") -> dict:
-    model = whisper.load_model(model_size)
-    result = model.transcribe(audio_path, verbose=False)
+print("Loading global Whisper model into memory for fast live inference...")
+_whisper_model = whisper.load_model("base")
+print("Whisper model loaded.")
+
+def transcribe_audio(audio_path: str) -> dict:
+    result = _whisper_model.transcribe(audio_path, verbose=False)
     return {
         "text": result["text"],
         "segments": [

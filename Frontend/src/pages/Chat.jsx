@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Sidebar from '../components/Sidebar'
 import ChatWindow from '../components/ChatWindow'
 import UploadMeeting from '../components/UploadMeeting'
+import LiveAssistant from './LiveAssistant'
 import api from '../lib/api'
 
 
@@ -13,6 +14,7 @@ export default function Chat() {
   const [meetings, setMeetings] = useState([])
   const [activeMeeting, setActiveMeeting] = useState(null)
   const [showUpload, setShowUpload] = useState(false)
+  const [showLive, setShowLive] = useState(false)
   const [loadingMeetings, setLoadingMeetings] = useState(true)
   const [fetchError, setFetchError] = useState('')
 
@@ -52,6 +54,7 @@ export default function Chat() {
   // ── Select a meeting from sidebar ──────────────────────────────────────
   const handleSelectMeeting = async (m) => {
     setShowUpload(false)
+    setShowLive(false)
 
     // If still processing, just show it without fetching full details
     if (m.status !== 'ready') {
@@ -73,7 +76,15 @@ export default function Chat() {
   // ── Open upload panel ──────────────────────────────────────────────────
   const handleNewMeeting = () => {
     setActiveMeeting(null)
+    setShowLive(false)
     setShowUpload(true)
+  }
+
+  // ── Open Live Assistant ────────────────────────────────────────────────
+  const handleLiveAssistant = () => {
+    setActiveMeeting(null)
+    setShowUpload(false)
+    setShowLive(true)
   }
 
 
@@ -128,6 +139,7 @@ export default function Chat() {
         activeMeeting={activeMeeting}
         onSelectMeeting={handleSelectMeeting}
         onNewMeeting={handleNewMeeting}
+        onLiveAssistant={handleLiveAssistant}
         user={user}
         onLogout={handleLogout}
         loading={loadingMeetings}
@@ -191,6 +203,11 @@ export default function Chat() {
                 ))}
               </div>
             </div>
+          </div>
+        ) : showLive ? (
+          /* ── Live Assistant Panel ────────────────────────────────────────── */
+          <div className="flex-1 h-full w-full animate-fade-in relative z-0">
+            <LiveAssistant user={user} />
           </div>
         ) : (
           /* ── Chat Window ───────────────────────────────────────────── */

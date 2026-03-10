@@ -6,6 +6,7 @@ export default function Sidebar({
   activeMeeting,
   onSelectMeeting,
   onNewMeeting,
+  onLiveAssistant,
   user,
   onLogout,
   loading
@@ -70,7 +71,7 @@ export default function Sidebar({
       </div>
 
       {/* ── New Meeting button ────────────────────────────────────────── */}
-      <div className="p-3 shrink-0">
+      <div className="p-3 shrink-0 flex flex-col gap-2">
         <button
           onClick={onNewMeeting}
           title="Upload new meeting"
@@ -79,6 +80,16 @@ export default function Sidebar({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-400/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
           <span className="text-lg leading-none group-hover:scale-125 transition-transform duration-300">+</span>
           {!collapsed && <span className="group-hover:translate-x-1 transition-transform duration-300">New Meeting</span>}
+        </button>
+
+        <button
+          onClick={onLiveAssistant}
+          title="Live AI Assistant (Google Meet)"
+          className={`w-full p-2.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-400 hover:text-white hover:border-indigo-500 hover:bg-indigo-500 shadow-sm text-sm font-medium flex items-center gap-2 transition-all duration-300 relative overflow-hidden group ${collapsed ? 'justify-center' : 'justify-start'}`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
+          <span className="text-lg leading-none transition-transform duration-300">🎙️</span>
+          {!collapsed && <span className="group-hover:translate-x-1 transition-transform duration-300">Live Assistant</span>}
         </button>
       </div>
 

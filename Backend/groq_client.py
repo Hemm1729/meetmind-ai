@@ -103,3 +103,31 @@ If the answer is not found in the context provided, clearly say so — do not ma
     )
 
     return response.choices[0].message.content.strip()
+
+
+def generate_live_answer(context: str, question: str) -> str:
+    """
+    Answers a question based on a live rolling context window of the meeting.
+    """
+    client = get_groq_client()
+
+    prompt = f"""You are the MeetMind Live Assistant. A meeting is currently active.
+Here is the raw context transcribed/OCRed from the past few minutes of the meeting:
+
+{context}
+
+User question: {question}
+
+Answer the question based ONLY on the context excerpts provided above. 
+If the information comes from a [SLIDE] block, explicitly mention that it was shown on a slide. 
+If it comes from the spoken transcript, you can mention it was spoken.
+Keep your answer concise and helpful."""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.4,
+        max_tokens=512,
+    )
+
+    return response.choices[0].message.content.strip()

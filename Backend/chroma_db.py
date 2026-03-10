@@ -133,3 +133,44 @@ def delete_meeting_vectors(meeting_id: str):
         client.delete_collection(f"meeting_{meeting_id}")
     except Exception:
         pass
+
+
+def store_live_chunk(session_id: str, transcript_chunk: str, ocr_chunk: str, timestamp: str):
+    """
+    Store an incoming streaming chunk from the Live Assistant.
+    """
+    collection = get_or_create_collection(session_id)
+    
+    docs = []
+    ids = []
+    
+    if transcript_chunk:
+        docs.append(transcript_chunk)
+        ids.append(f"{session_id}_t_{timestamp}")
+        
+    if ocr_chunk:
+        # Wrap the ocr chunk so the LLM intuitively knows it's slide content
+        docs.append(f"[SLIDE VISUAL TEXT]\n{ocr_chunk}")
+        ids.append(f"{session_id}_v_{timestamp}")
+        
+    if docs:
+        collection.add(documents=docs, ids=ids)
+
+
+def retrieve_live_chunks(session_id: str, question: str, n_results: int = 5) -> list[str]:
+    """
+    Query the active session's vector store for context snippets.
+    """
+    collection = get_or_create_collection(session_id)
+    total = collection.count()
+    if total == 0:
+        return []
+        
+    results = collection.query(
+        query_texts=[question],
+        n_results=min(n_results, total)
+    )
+    
+    if results and results["documents"]:
+        return results["documents"][0]
+    return []
