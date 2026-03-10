@@ -3,17 +3,17 @@ import api from '../lib/api'
 
 
 const ACCEPTED_EXTENSIONS = ['.mp4', '.mp3', '.wav', '.mkv', '.avi', '.mov', '.webm', '.m4a']
-const MAX_SIZE_MB          = 500
-const MAX_SIZE_BYTES       = MAX_SIZE_MB * 1024 * 1024
+const MAX_SIZE_MB = 500
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 
 
 export default function UploadMeeting({ onUploadComplete }) {
-  const [dragging, setDragging]   = useState(false)
+  const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [stage, setStage]         = useState('')     // current processing stage label
-  const [progress, setProgress]   = useState(0)      // upload % (0-100)
-  const [error, setError]         = useState('')
-  const [fileName, setFileName]   = useState('')
+  const [stage, setStage] = useState('')     // current processing stage label
+  const [progress, setProgress] = useState(0)      // upload % (0-100)
+  const [error, setError] = useState('')
+  const [fileName, setFileName] = useState('')
 
   const inputRef = useRef()
 
@@ -82,10 +82,10 @@ export default function UploadMeeting({ onUploadComplete }) {
       // ── Stage labels shown while server processes ────────────────────
       // These are just UX estimates — the real work is server-side
       await simulateStages([
-        { label: 'Extracting audio with ffmpeg...',  duration: 1500 },
-        { label: 'Transcribing with Whisper...',     duration: 3000 },
-        { label: 'Generating summary & actions...',  duration: 1500 },
-        { label: 'Building search index...',         duration: 1000 },
+        { label: 'Extracting audio with ffmpeg...', duration: 1500 },
+        { label: 'Transcribing with Whisper...', duration: 3000 },
+        { label: 'Generating summary & actions...', duration: 1500 },
+        { label: 'Building search index...', duration: 1000 },
       ])
 
       setStage('✓ Meeting is ready!')
@@ -146,7 +146,7 @@ export default function UploadMeeting({ onUploadComplete }) {
 
 
   return (
-    <div style={{ padding: '0 32px', maxWidth: 560, margin: '0 auto', width: '100%' }}>
+    <div className="px-8 max-w-[560px] mx-auto w-full">
 
       {/* ── Drop zone ─────────────────────────────────────────────────── */}
       <div
@@ -154,213 +154,94 @@ export default function UploadMeeting({ onUploadComplete }) {
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         onClick={() => !uploading && inputRef.current?.click()}
-        style={{
-          border: `2px dashed ${
-            dragging   ? 'var(--accent)'        :
-            uploading  ? 'var(--border)'         :
-            error      ? 'rgba(239,68,68,0.4)'   :
-                         'var(--border-bright)'
-          }`,
-          borderRadius: 18,
-          padding: '48px 32px',
-          textAlign: 'center',
-          cursor: uploading ? 'default' : 'pointer',
-          background: dragging
-            ? 'var(--accent-glow)'
-            : uploading
-            ? 'var(--bg-card)'
-            : 'var(--bg-card)',
-          transition: 'all 0.2s',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
+        className={`rounded-2xl px-8 py-12 text-center relative overflow-hidden transition-all duration-200 border-2 border-dashed ${uploading ? 'cursor-default bg-slate-800/80 border-slate-700/80' : 'cursor-pointer'
+          } ${dragging ? 'bg-indigo-500/10 border-indigo-500 scale-[1.02]' :
+            error ? 'border-red-500/40 bg-slate-800' :
+              !uploading ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50 hover:bg-slate-800/80' : ''
+          }`}
       >
         {/* Hidden file input */}
         <input
           ref={inputRef}
           type="file"
           accept={ACCEPTED_EXTENSIONS.join(',')}
-          style={{ display: 'none' }}
+          className="hidden"
           onChange={onInputChange}
         />
 
-
         {/* ── Uploading state ──────────────────────────────────────── */}
         {uploading ? (
-          <div>
-
+          <div className="animate-fade-in-up">
             {/* Animated spinner */}
-            <div style={{
-              width: 56, height: 56,
-              border: '3px solid var(--border)',
-              borderTop: `3px solid var(--accent)`,
-              borderRadius: '50%',
-              margin: '0 auto 20px',
-            }} className="spin-slow" />
+            <div className="w-14 h-14 border-4 border-slate-700 border-t-indigo-500 rounded-full mx-auto mb-5 animate-spin" />
 
             {/* File name */}
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: 12,
-              marginBottom: 10,
-              fontFamily: 'Space Mono',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: 300,
-              margin: '0 auto 10px'
-            }}>
+            <p className="text-slate-400 text-xs mb-2.5 font-mono truncate max-w-[300px] mx-auto">
               {fileName}
             </p>
 
             {/* Stage label */}
-            <p style={{
-              color: 'var(--text-primary)',
-              fontSize: 15,
-              fontWeight: 500,
-              marginBottom: 20
-            }}>
+            <p className="text-white text-[15px] font-medium mb-5">
               {stage}
             </p>
 
             {/* Progress bar — only during actual upload (progress < 100) */}
             {progress < 100 && (
-              <div style={{
-                width: '100%',
-                maxWidth: 320,
-                height: 4,
-                background: 'var(--border)',
-                borderRadius: 2,
-                margin: '0 auto 12px',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${progress}%`,
-                  background: 'linear-gradient(90deg, #6366f1, #22d3a0)',
-                  borderRadius: 2,
-                  transition: 'width 0.3s ease'
-                }} />
+              <div className="w-full max-w-[320px] h-1.5 bg-slate-700 rounded-full mx-auto mb-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-indigo-500 to-teal-400 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
               </div>
             )}
 
             {/* Estimated time note */}
-            <p style={{
-              color: 'var(--text-muted)',
-              fontSize: 12,
-              marginTop: 8
-            }}>
+            <p className="text-slate-500 text-xs mt-2">
               Please keep this tab open while processing
             </p>
-
           </div>
-
         ) : (
-
           /* ── Idle / drop state ───────────────────────────────────── */
-          <div>
-
+          <div className="animate-fade-in">
             {/* Icon */}
-            <div style={{
-              width: 64, height: 64,
-              borderRadius: 18,
-              background: dragging
-                ? 'rgba(99,102,241,0.15)'
-                : 'var(--bg-hover)',
-              border: `1px solid ${dragging ? 'var(--accent)' : 'var(--border-bright)'}`,
-              display: 'flex', alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 28,
-              margin: '0 auto 20px',
-              transition: 'all 0.2s'
-            }}>
+            <div className={`w-16 h-16 rounded-2xl mx-auto mb-5 flex items-center justify-center text-3xl transition-all duration-200 ${dragging ? 'bg-indigo-500/15 border border-indigo-500/50 scale-110 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'bg-slate-700/50 border border-slate-600 shadow-sm'
+              }`}>
               {dragging ? '📂' : '🎙️'}
             </div>
 
             {/* Heading */}
-            <p style={{
-              color: 'var(--text-primary)',
-              fontSize: 16, fontWeight: 600,
-              marginBottom: 8
-            }}>
-              {dragging
-                ? 'Drop it here!'
-                : 'Drop your meeting recording here'
-              }
+            <p className="text-white text-base font-semibold mb-2">
+              {dragging ? 'Drop it here!' : 'Drop your meeting recording here'}
             </p>
 
             {/* Sub text */}
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: 13,
-              marginBottom: 20
-            }}>
-              or{' '}
-              <span style={{
-                color: 'var(--accent)',
-                textDecoration: 'underline',
-                cursor: 'pointer'
-              }}>
-                click to browse
-              </span>
+            <p className="text-slate-400 text-[13px] mb-5">
+              or <span className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer transition-colors">click to browse</span>
             </p>
 
             {/* Accepted formats */}
-            <div style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 6,
-              justifyContent: 'center',
-              marginBottom: 16
-            }}>
+            <div className="flex flex-wrap justify-center gap-1.5 mb-4">
               {ACCEPTED_EXTENSIONS.map(ext => (
-                <span key={ext} style={{
-                  padding: '3px 10px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 6,
-                  fontSize: 11,
-                  color: 'var(--text-muted)',
-                  fontFamily: 'Space Mono'
-                }}>
+                <span key={ext} className="px-2.5 py-0.5 bg-slate-900 border border-slate-800 rounded-md text-[11px] text-slate-500 font-mono shadow-sm">
                   {ext}
                 </span>
               ))}
             </div>
 
             {/* Max size note */}
-            <p style={{
-              color: 'var(--text-muted)',
-              fontSize: 11
-            }}>
+            <p className="text-slate-500 text-[11px]">
               Maximum file size: {MAX_SIZE_MB}MB
             </p>
-
           </div>
         )}
-
       </div>
-
 
       {/* ── Error message ─────────────────────────────────────────────── */}
       {error && (
-        <div style={{
-          marginTop: 14,
-          background: 'rgba(239,68,68,0.08)',
-          border: '1px solid rgba(239,68,68,0.2)',
-          borderRadius: 12,
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 10
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+        <div className="mt-3.5 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-start gap-2.5 animate-fade-in-up">
+          <span className="text-base shrink-0 mt-0.5">⚠️</span>
           <div>
-            <p style={{
-              color: '#f87171',
-              fontSize: 13,
-              marginBottom: 6
-            }}>
+            <p className="text-red-400 text-[13px] mb-1.5 leading-snug">
               {error}
             </p>
             <button
@@ -368,13 +249,7 @@ export default function UploadMeeting({ onUploadComplete }) {
                 setError('')
                 inputRef.current?.click()
               }}
-              style={{
-                background: 'none', border: 'none',
-                color: '#f87171', fontSize: 12,
-                cursor: 'pointer', padding: 0,
-                textDecoration: 'underline',
-                fontFamily: 'DM Sans'
-              }}
+              className="bg-transparent border-none text-red-500 hover:text-red-400 text-xs cursor-pointer p-0 underline font-sans transition-colors"
             >
               Try again
             </button>
@@ -382,49 +257,23 @@ export default function UploadMeeting({ onUploadComplete }) {
         </div>
       )}
 
-
       {/* ── Tips card ─────────────────────────────────────────────────── */}
       {!uploading && !error && (
-        <div style={{
-          marginTop: 16,
-          padding: '14px 18px',
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border)',
-          borderRadius: 12,
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: 12
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>💡</span>
+        <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700/80 rounded-xl flex items-start gap-3 animate-fade-in shadow-sm">
+          <span className="text-base shrink-0 mt-[1px]">💡</span>
           <div>
-            <p style={{
-              fontSize: 12, fontWeight: 600,
-              color: 'var(--text-secondary)',
-              marginBottom: 4
-            }}>
+            <p className="text-xs font-semibold text-slate-300 mb-1.5">
               Tips for best results
             </p>
-            <ul style={{
-              margin: 0, padding: 0,
-              listStyle: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 3
-            }}>
+            <ul className="m-0 p-0 list-none flex flex-col gap-1.5">
               {[
                 'Clear audio with minimal background noise works best',
                 'MP3 or WAV files process faster than video formats',
                 'Longer recordings (1hr+) may take 10–15 minutes',
                 'Keep this tab open during processing',
               ].map((tip, i) => (
-                <li key={i} style={{
-                  fontSize: 11,
-                  color: 'var(--text-muted)',
-                  display: 'flex',
-                  gap: 6,
-                  alignItems: 'flex-start'
-                }}>
-                  <span style={{ color: 'var(--accent)', flexShrink: 0 }}>·</span>
+                <li key={i} className="text-[11px] text-slate-400 flex gap-1.5 items-start leading-snug">
+                  <span className="text-indigo-400 shrink-0 font-bold">·</span>
                   {tip}
                 </li>
               ))}
@@ -432,7 +281,6 @@ export default function UploadMeeting({ onUploadComplete }) {
           </div>
         </div>
       )}
-
     </div>
   )
 }

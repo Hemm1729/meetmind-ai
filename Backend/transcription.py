@@ -3,7 +3,7 @@ import subprocess
 import os
 
 # Add ffmpeg to PATH so Whisper can find it internally
-FFMPEG_DIR = r"C:\Users\DELL\OneDrive\Documents\ffmpeg-master-latest-win64-gpl\ffmpeg-master-latest-win64-gpl\bin"
+FFMPEG_DIR = r"C:\ffmpeg\bin"
 os.environ["PATH"] = FFMPEG_DIR + os.pathsep + os.environ.get("PATH", "")
 
 FFMPEG_PATH = os.path.join(FFMPEG_DIR, "ffmpeg.exe")

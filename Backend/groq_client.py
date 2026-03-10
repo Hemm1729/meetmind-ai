@@ -10,30 +10,39 @@ def get_groq_client() -> Groq:
     return Groq(api_key=api_key)
 
 
-def generate_summary_and_actions(transcript: str) -> dict:
+def generate_summary_and_actions(transcript: str, ocr_text: str = "") -> dict:
     """
-    Use Groq Llama3 to generate a summary + action items from transcript.
-    Called once after transcription is done.
+    Use Groq Llama3 to generate a summary + action items + decisions from transcript and visual slides.
+    Called once after transcription and OCR is done.
     """
     client = get_groq_client()
 
-    prompt = f"""You are an expert meeting analyst. Analyze the following meeting transcript and provide:
+    prompt = f"""You are an expert meeting analyst. Analyze the following meeting transcript and presentation slide text, then provide:
 
-1. A concise summary (3-5 sentences) of what was discussed
-2. A list of action items with assignee and deadline if mentioned
+1. A concise summary (3-5 sentences) of what was discussed.
+2. A list of action items with assignee and deadline if mentioned.
+3. A list of key decisions made during the meeting.
 
-Transcript:
+Transcript (Spoken words):
 {transcript[:8000]}
+
+Slide Text (Shown on screen):
+{ocr_text[:4000] if ocr_text else 'No visual slides presented.'}
 
 Respond in this exact JSON format:
 {{
   "summary": "...",
   "action_items": [
     {{"task": "...", "assignee": "...", "deadline": "..."}}
+  ],
+  "decisions": [
+    "Decision 1",
+    "Decision 2"
   ]
 }}
 
 If no assignee or deadline is mentioned, use "Unassigned" and "Not specified".
+If no decisions were explicitly made, return an empty array for decisions [].
 Return ONLY valid JSON, no extra text."""
 
     response = client.chat.completions.create(
@@ -58,7 +67,8 @@ Return ONLY valid JSON, no extra text."""
         # Fallback: return raw text as summary if JSON parsing fails
         return {
             "summary": text,
-            "action_items": []
+            "action_items": [],
+            "decisions": []
         }
 
 
@@ -75,12 +85,15 @@ def answer_question(question: str, context_chunks: list[str], transcript_title: 
 
 Meeting: "{transcript_title}"
 
-Relevant transcript excerpts:
+Relevant context excerpts (This may include Spoken Transcripts AND Visual Slide Text):
 {context}
 
 User question: {question}
 
-Answer the question based only on the transcript context above. Be specific and reference what was actually said when possible. If the answer is not found in the transcript, clearly say so — do not make things up."""
+Answer the question based ONLY on the context excerpts provided above. 
+If the information comes from a [SLIDE X] block, explicitly mention that it was shown on a slide. 
+If it comes from the spoken transcript, you can mention it was spoken.
+If the answer is not found in the context provided, clearly say so — do not make things up."""
 
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",

@@ -15,12 +15,12 @@ export default function Sidebar({
 
   // ── Format meeting date for sidebar ───────────────────────────────────
   const formatDate = (iso) => {
-    const d    = new Date(iso)
-    const now  = new Date()
+    const d = new Date(iso)
+    const now = new Date()
     const diff = now - d  // ms difference
 
-    if (diff < 3600000)   return 'Just now'
-    if (diff < 86400000)  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    if (diff < 3600000) return 'Just now'
+    if (diff < 86400000) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     if (diff < 604800000) return d.toLocaleDateString([], { weekday: 'short' })
     return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
   }
@@ -28,394 +28,157 @@ export default function Sidebar({
 
   // ── Status dot color ──────────────────────────────────────────────────
   const statusColor = (status) => {
-    if (status === 'ready')      return 'var(--green)'
+    if (status === 'ready') return 'var(--green)'
     if (status === 'processing') return 'var(--amber)'
-    if (status === 'failed')     return '#f87171'
+    if (status === 'failed') return '#f87171'
     return 'var(--text-muted)'
   }
 
 
   // ── Status label ──────────────────────────────────────────────────────
   const statusLabel = (status) => {
-    if (status === 'ready')      return 'Ready'
+    if (status === 'ready') return 'Ready'
     if (status === 'processing') return 'Processing...'
-    if (status === 'failed')     return 'Failed'
+    if (status === 'failed') return 'Failed'
     return ''
   }
 
 
   return (
-    <aside style={{
-      width:    collapsed ? 60 : 264,
-      minWidth: collapsed ? 60 : 264,
-      height: '100vh',
-      background: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border)',
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'width 0.25s ease, min-width 0.25s ease',
-      overflow: 'hidden',
-      flexShrink: 0
-    }}>
-
+    <aside className={`h-screen bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-300 ease-in-out shrink-0 ${collapsed ? 'w-[64px]' : 'w-[264px]'} z-20`}>
 
       {/* ── Header ───────────────────────────────────────────────────── */}
-      <div style={{
-        padding: collapsed ? '18px 14px' : '18px 16px',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'space-between',
-        flexShrink: 0
-      }}>
-
-        {/* Logo — hidden when collapsed */}
+      <div className={`p-4 border-b border-slate-800 flex items-center shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}>
         {!collapsed && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10
-          }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: 8,
-              background: 'linear-gradient(135deg, #6366f1, #22d3a0)',
-              display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 15,
-              flexShrink: 0
-            }}>🧠</div>
-            <span style={{
-              fontFamily: 'Space Mono, monospace',
-              fontSize: 16, fontWeight: 700,
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.5px',
-              whiteSpace: 'nowrap'
-            }}>MeetMind</span>
+          <div className="flex items-center gap-3 animate-bounce-subtle">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-teal-400 flex items-center justify-center text-sm shadow-[0_2px_10px_rgba(99,102,241,0.5)] border border-white/10 shrink-0">
+              🧠
+            </div>
+            <span className="font-mono text-[17px] font-bold text-white tracking-tight whitespace-nowrap drop-shadow-md">
+              MeetMind
+            </span>
           </div>
         )}
 
-        {/* Collapse toggle button */}
         <button
           onClick={() => setCollapsed(!collapsed)}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          style={{
-            background: 'var(--bg-hover)',
-            border: '1px solid var(--border-bright)',
-            borderRadius: 7,
-            cursor: 'pointer',
-            color: 'var(--text-secondary)',
-            fontSize: 13,
-            padding: '5px 8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            transition: 'all 0.15s'
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+          className="p-1.5 rounded-md bg-slate-800/50 hover:bg-slate-700 hover:text-white border border-slate-700 text-slate-400 text-xs flex items-center justify-center shrink-0 transition-colors"
         >
           {collapsed ? '→' : '←'}
         </button>
       </div>
 
-
       {/* ── New Meeting button ────────────────────────────────────────── */}
-      <div style={{
-        padding: collapsed ? '12px 10px' : '12px 12px',
-        flexShrink: 0
-      }}>
+      <div className="p-3 shrink-0">
         <button
           onClick={onNewMeeting}
           title="Upload new meeting"
-          style={{
-            width: '100%',
-            padding: collapsed ? '10px' : '10px 14px',
-            background: 'transparent',
-            border: '1px dashed var(--border-bright)',
-            borderRadius: 10,
-            cursor: 'pointer',
-            color: 'var(--text-secondary)',
-            fontSize: 13, fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            transition: 'all 0.15s',
-            fontFamily: 'DM Sans'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'var(--accent)'
-            e.currentTarget.style.color       = 'var(--accent)'
-            e.currentTarget.style.background  = 'var(--accent-glow)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border-bright)'
-            e.currentTarget.style.color       = 'var(--text-secondary)'
-            e.currentTarget.style.background  = 'transparent'
-          }}
+          className={`w-full p-2.5 bg-transparent border border-dashed border-slate-700 rounded-xl text-slate-400 hover:text-indigo-400 hover:border-indigo-500 hover:bg-indigo-500/10 text-sm font-medium flex items-center gap-2 transition-all duration-300 relative overflow-hidden group ${collapsed ? 'justify-center' : 'justify-start'}`}
         >
-          <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
-          {!collapsed && <span>New Meeting</span>}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-400/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
+          <span className="text-lg leading-none group-hover:scale-125 transition-transform duration-300">+</span>
+          {!collapsed && <span className="group-hover:translate-x-1 transition-transform duration-300">New Meeting</span>}
         </button>
       </div>
 
-
       {/* ── Meetings list ─────────────────────────────────────────────── */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '0 8px'
-      }}>
-
-        {/* Section label */}
+      <div className="flex-1 overflow-y-auto px-2 custom-scrollbar">
         {!collapsed && (
-          <div style={{
-            padding: '6px 8px 8px',
-            fontSize: 10, fontWeight: 700,
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em'
-          }}>
+          <div className="px-2 pt-2 pb-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             Meetings
           </div>
         )}
 
-
-        {/* Loading skeletons */}
         {loading && !collapsed && (
           [1, 2, 3].map(i => (
-            <div key={i} style={{
-              padding: '10px 10px',
-              marginBottom: 4,
-              borderRadius: 8,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10
-            }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: 'var(--border-bright)',
-                flexShrink: 0
-              }} />
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  height: 12, borderRadius: 4,
-                  background: 'var(--border-bright)',
-                  marginBottom: 6,
-                  width: `${60 + i * 15}%`
-                }} />
-                <div style={{
-                  height: 10, borderRadius: 4,
-                  background: 'var(--border)',
-                  width: '40%'
-                }} />
+            <div key={i} className="p-2.5 mb-1 rounded-xl flex items-center gap-3 animate-pulse">
+              <div className="w-2 h-2 rounded-full bg-slate-700 shrink-0" />
+              <div className="flex-1">
+                <div className="h-3 rounded bg-slate-700 mb-2" style={{ width: `${60 + i * 15}%` }} />
+                <div className="h-2.5 rounded bg-slate-800 w-2/5" />
               </div>
             </div>
           ))
         )}
 
-
-        {/* Empty state */}
         {!loading && meetings.length === 0 && !collapsed && (
-          <div style={{
-            padding: '24px 8px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: 28, marginBottom: 10 }}>🎙️</div>
-            <p style={{
-              color: 'var(--text-muted)',
-              fontSize: 12,
-              lineHeight: 1.6
-            }}>
+          <div className="px-2 py-8 text-center animate-fade-in">
+            <div className="text-3xl mb-3 opacity-80">🎙️</div>
+            <p className="text-slate-500 text-xs leading-relaxed">
               No meetings yet.<br />
-              Upload your first recording.
+              Upload your recording.
             </p>
           </div>
         )}
 
-
-        {/* Meeting items */}
-        {meetings.map(m => {
+        {meetings.map((m, index) => {
           const isActive = activeMeeting?.id === m.id
 
           return (
             <button
-              key={m.id}
+              // ensure uniqueness using fallback index
+              key={`${m.id}-${index}`}
               onClick={() => onSelectMeeting(m)}
               title={collapsed ? m.title : undefined}
-              style={{
-                width: '100%',
-                padding: collapsed ? '10px' : '10px 10px',
-                background: isActive
-                  ? 'var(--bg-hover)'
-                  : 'transparent',
-                border: isActive
-                  ? '1px solid var(--border-bright)'
-                  : '1px solid transparent',
-                borderRadius: 8,
-                cursor: 'pointer',
-                textAlign: 'left',
-                marginBottom: 2,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                transition: 'all 0.12s',
-                position: 'relative'
-              }}
-              onMouseEnter={e => {
-                if (!isActive) {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
-                  e.currentTarget.style.borderColor = 'var(--border)'
-                }
-              }}
-              onMouseLeave={e => {
-                if (!isActive) {
-                  e.currentTarget.style.background  = 'transparent'
-                  e.currentTarget.style.borderColor = 'transparent'
-                }
-              }}
+              style={{ animationDelay: `${index * 50}ms` }}
+              className={`w-full p-2.5 rounded-xl text-left mb-1 flex items-center gap-3 transition-all duration-300 relative overflow-hidden group animate-fade-in-up hover:scale-[1.02]
+                ${isActive
+                  ? 'bg-slate-800 border-slate-700 shadow-sm border shadow-indigo-500/10'
+                  : 'bg-transparent border-transparent hover:bg-slate-800/60 hover:border-slate-700/50 border'
+                } ${collapsed ? 'justify-center' : 'justify-start'}`}
             >
-              {/* Status dot */}
-              <div style={{
-                width: 7, height: 7,
-                borderRadius: '50%',
-                background: statusColor(m.status),
-                flexShrink: 0,
-                boxShadow: m.status === 'ready'
-                  ? '0 0 6px rgba(34,211,160,0.4)'
-                  : m.status === 'processing'
-                  ? '0 0 6px rgba(251,191,36,0.4)'
-                  : 'none'
-              }} />
+              <div className={`w-2 h-2 rounded-full shrink-0 ${m.status === 'ready' ? 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]' :
+                m.status === 'processing' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)] animate-pulse' :
+                  m.status === 'failed' ? 'bg-red-500' : 'bg-slate-500'
+                }`} />
 
-              {/* Title + date — hidden when collapsed */}
               {!collapsed && (
-                <div style={{ overflow: 'hidden', flex: 1 }}>
-                  <div style={{
-                    fontSize: 13,
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive
-                      ? 'var(--text-primary)'
-                      : 'var(--text-secondary)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    marginBottom: 2
-                  }}>
+                <div className="overflow-hidden flex-1">
+                  <div className={`text-[13px] truncate mb-0.5 transition-colors ${isActive ? 'font-semibold text-white' : 'font-medium text-slate-300 group-hover:text-white'}`}>
                     {m.title}
                   </div>
-                  <div style={{
-                    fontSize: 11,
-                    color: m.status !== 'ready'
-                      ? statusColor(m.status)
-                      : 'var(--text-muted)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4
-                  }}>
-                    {m.status !== 'ready'
-                      ? statusLabel(m.status)
-                      : formatDate(m.created_at)
-                    }
+                  <div className={`text-[11px] flex items-center gap-1.5 ${m.status !== 'ready' ? (m.status === 'processing' ? 'text-amber-400' : 'text-red-400') : 'text-slate-500'}`}>
+                    {m.status !== 'ready' ? statusLabel(m.status) : formatDate(m.created_at)}
                   </div>
                 </div>
               )}
 
-              {/* Active indicator bar */}
               {isActive && (
-                <div style={{
-                  position: 'absolute',
-                  left: 0, top: '20%',
-                  width: 3, height: '60%',
-                  background: 'var(--accent)',
-                  borderRadius: '0 2px 2px 0'
-                }} />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-[60%] bg-indigo-500 rounded-r-md" />
               )}
-
             </button>
           )
         })}
-
       </div>
 
-
       {/* ── User footer ───────────────────────────────────────────────── */}
-      <div style={{
-        padding: collapsed ? '12px 10px' : '12px 16px',
-        borderTop: '1px solid var(--border)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        justifyContent: collapsed ? 'center' : 'flex-start',
-        flexShrink: 0
-      }}>
-
-        {/* Avatar */}
-        <div style={{
-          width: 32, height: 32,
-          borderRadius: 9,
-          background: 'linear-gradient(135deg, #6366f1, #22d3a0)',
-          display: 'flex', alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 13, fontWeight: 700,
-          color: '#fff', flexShrink: 0
-        }}>
+      <div className={`p-3 border-t border-slate-800 flex items-center gap-3 shrink-0 ${collapsed ? 'justify-center' : 'justify-start'}`}>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-teal-400 flex items-center justify-center text-sm font-bold text-white shadow-md shrink-0">
           {user?.email?.[0]?.toUpperCase() || 'U'}
         </div>
 
-        {/* Email + logout — hidden when collapsed */}
         {!collapsed && (
           <>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{
-                fontSize: 12,
-                fontWeight: 500,
-                color: 'var(--text-primary)',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}>
+            <div className="flex-1 overflow-hidden">
+              <div className="text-xs font-semibold text-white truncate">
                 {user?.email}
               </div>
-              <div style={{
-                fontSize: 10,
-                color: 'var(--text-muted)'
-              }}>
+              <div className="text-[10px] text-slate-400 font-medium">
                 Free plan
               </div>
             </div>
 
-            {/* Logout button */}
             <button
               onClick={onLogout}
               title="Sign out"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-                fontSize: 16,
-                padding: 4,
-                display: 'flex',
-                alignItems: 'center',
-                borderRadius: 6,
-                transition: 'all 0.15s'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.color      = '#f87171'
-                e.currentTarget.style.background = 'rgba(239,68,68,0.08)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.color      = 'var(--text-muted)'
-                e.currentTarget.style.background = 'none'
-              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center text-lg"
             >
-              ↩
+              &crarr;
             </button>
           </>
         )}
-
       </div>
-
     </aside>
   )
 }

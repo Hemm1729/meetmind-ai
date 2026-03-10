@@ -4,10 +4,10 @@ import api from '../lib/api'
 
 
 export default function Login() {
-  const [email, setEmail]     = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState('')
-  const navigate              = useNavigate()
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
 
 
   const handleSubmit = async (e) => {
@@ -30,222 +30,95 @@ export default function Login() {
 
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--bg-primary)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-background">
       {/* Background glow orbs */}
-      <div style={{
-        position: 'absolute',
-        top: '20%', left: '15%',
-        width: 500, height: 500,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '15%', right: '10%',
-        width: 400, height: 400,
-        borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(34,211,160,0.05) 0%, transparent 70%)',
-        pointerEvents: 'none'
-      }} />
+      <div className="absolute top-[20%] left-[15%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-[100px] pointer-events-none animate-blob mix-blend-screen" />
+      <div className="absolute top-[10%] right-[15%] w-[400px] h-[400px] rounded-full bg-teal-500/20 blur-[100px] pointer-events-none animate-blob mix-blend-screen" style={{ animationDelay: '2s' }} />
+      <div className="absolute bottom-[20%] left-[30%] w-[600px] h-[600px] rounded-full bg-purple-500/20 blur-[120px] pointer-events-none animate-blob mix-blend-screen" style={{ animationDelay: '4s' }} />
 
-
-      <div style={{ width: '100%', maxWidth: 420, position: 'relative', zIndex: 1 }}>
-
-        {/* ── Logo ─────────────────────────────────────────────────────── */}
-        <div style={{ textAlign: 'center', marginBottom: 52 }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 12,
-            marginBottom: 14
-          }}>
-            <div style={{
-              width: 40, height: 40,
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, #6366f1, #22d3a0)',
-              display: 'flex', alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 20,
-              boxShadow: '0 0 24px rgba(99,102,241,0.3)'
-            }}>🧠</div>
-            <span style={{
-              fontFamily: 'Space Mono, monospace',
-              fontSize: 24, fontWeight: 700,
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.5px'
-            }}>MeetMind</span>
+      <div className="w-full max-w-[420px] relative z-10 animate-fade-in">
+        {/* Logo */}
+        <div className="text-center mb-10 animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="inline-flex items-center gap-3 mb-4 animate-bounce-subtle">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-teal-400 flex items-center justify-center text-2xl shadow-[0_0_30px_rgba(99,102,241,0.5)] border border-white/10">
+              🧠
+            </div>
+            <span className="font-mono text-3xl font-bold text-white tracking-tight drop-shadow-md">MeetMind</span>
           </div>
-          <p style={{
-            color: 'var(--text-secondary)',
-            fontSize: 14
-          }}>
+          <p className="text-slate-300 text-sm font-medium tracking-wide">
             Your AI-powered meeting intelligence
           </p>
         </div>
 
+        {/* Card */}
+        <div className="glass-card rounded-2xl p-8 sm:p-10 animate-slide-up relative overflow-hidden group/card shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-slate-700/50" style={{ animationDelay: '200ms' }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-        {/* ── Card ─────────────────────────────────────────────────────── */}
-        <div className="glass-card" style={{ borderRadius: 18, padding: 36 }}>
-
-          <h2 style={{
-            fontSize: 22, fontWeight: 600,
-            color: 'var(--text-primary)',
-            marginBottom: 6
-          }}>
+          <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
             Welcome back
           </h2>
-          <p style={{
-            color: 'var(--text-secondary)',
-            fontSize: 13,
-            marginBottom: 32
-          }}>
+          <p className="text-slate-400 text-sm mb-8 leading-relaxed">
             Enter your email and we'll send you a one-time sign-in code.
           </p>
 
-
-          <form onSubmit={handleSubmit}>
-
-            {/* Email input */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{
-                display: 'block',
-                fontSize: 11, fontWeight: 600,
-                color: 'var(--text-secondary)',
-                marginBottom: 8,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em'
-              }}>
+          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <div className="group/input">
+              <label className="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest transition-colors group-focus-within/input:text-indigo-400">
                 Email address
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                autoFocus
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-bright)',
-                  borderRadius: 12,
-                  color: 'var(--text-primary)',
-                  fontSize: 14,
-                  outline: 'none',
-                  transition: 'border-color 0.2s, box-shadow 0.2s',
-                  fontFamily: 'DM Sans, sans-serif',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={e => {
-                  e.target.style.borderColor = 'var(--accent)'
-                  e.target.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = 'var(--border-bright)'
-                  e.target.style.boxShadow = 'none'
-                }}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  autoFocus
+                  className="w-full px-4 py-3.5 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-300 shadow-inner"
+                />
+                <div className="absolute inset-0 rounded-xl pointer-events-none border border-transparent group-focus-within/input:border-indigo-500/50 transition-colors duration-300" />
+              </div>
             </div>
 
-
-            {/* Error message */}
             {error && (
-              <div style={{
-                background: 'rgba(239,68,68,0.08)',
-                border: '1px solid rgba(239,68,68,0.2)',
-                borderRadius: 10,
-                padding: '10px 14px',
-                marginBottom: 20,
-                color: '#f87171',
-                fontSize: 13,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8
-              }}>
-                <span>⚠️</span>
-                <span>{error}</span>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-center gap-3 text-red-400 text-sm animate-fade-in-up">
+                <span className="text-base drop-shadow-sm">⚠️</span>
+                <span className="font-medium">{error}</span>
               </div>
             )}
 
-
-            {/* Submit button */}
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              style={{
-                width: '100%',
-                padding: '13px',
-                background: loading || !email.trim()
-                  ? 'var(--bg-hover)'
-                  : 'linear-gradient(135deg, #6366f1, #4f52cc)',
-                border: 'none',
-                borderRadius: 12,
-                color: loading || !email.trim()
-                  ? 'var(--text-muted)'
-                  : '#fff',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: loading || !email.trim() ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-                fontFamily: 'DM Sans, sans-serif',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                boxShadow: loading || !email.trim()
-                  ? 'none'
-                  : '0 4px 14px rgba(99,102,241,0.3)'
-              }}
-              onMouseEnter={e => {
-                if (!loading && email.trim()) {
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(99,102,241,0.4)'
-                }
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = loading || !email.trim()
-                  ? 'none'
-                  : '0 4px 14px rgba(99,102,241,0.3)'
-              }}
+              className={`w-full py-3.5 rounded-xl text-[15px] font-semibold transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/btn font-sans
+                ${loading || !email.trim()
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
+                  : 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-[0_4px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_8px_25px_rgba(99,102,241,0.5)] hover:-translate-y-0.5 border border-indigo-500/50'
+                }`}
             >
+              {/* Shimmer effect */}
+              {!loading && email.trim() && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover/btn:animate-shimmer" />
+              )}
+
               {loading ? (
-                <>
-                  <span className="typing-dot" />
-                  <span className="typing-dot" />
-                  <span className="typing-dot" />
-                </>
+                <div className="flex items-center gap-1.5 h-5 relative z-10">
+                  <span className="typing-dot bg-white/80" />
+                  <span className="typing-dot bg-white/80" />
+                  <span className="typing-dot bg-white/80" />
+                </div>
               ) : (
-                <>Send code →</>
+                <span className="relative z-10 flex items-center gap-2">
+                  Send code <span className="group-hover/btn:translate-x-1 transition-transform duration-300">&rarr;</span>
+                </span>
               )}
             </button>
-
           </form>
         </div>
 
-
-        {/* Footer note */}
-        <p style={{
-          textAlign: 'center',
-          marginTop: 20,
-          color: 'var(--text-muted)',
-          fontSize: 12
-        }}>
-          No password needed · New users are registered automatically
+        <p className="text-center mt-8 text-slate-500 text-xs animate-slide-up font-medium tracking-wide" style={{ animationDelay: '300ms' }}>
+          No password needed &middot; New users are registered automatically
         </p>
-
       </div>
     </div>
   )

@@ -11,3 +11,6 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# Database
+Backend/chroma_data/

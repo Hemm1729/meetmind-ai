@@ -9,7 +9,8 @@ from supabase import create_client, Client
 
 from transcription import transcribe_video
 from groq_client import generate_summary_and_actions
-from chroma_db import store_transcript
+from chroma_db import store_transcript, delete_meeting_vectors
+from video_processor import extract_keyframes_and_ocr
 
 router = APIRouter()
 
@@ -114,19 +115,37 @@ async def upload_meeting(
             "text": full_text
         }).execute()
 
-        # ── Step 4: Generate Summary + Action Items via Groq ──────────────
-        ai_result = generate_summary_and_actions(full_text)
+        # ── Step 3.5: Extract OCR from Video (if applicable) ──────────────
+        ocr_text = ""
+        if ext in [".mp4", ".mkv", ".avi", ".mov", ".webm"]:
+            try:
+                print(f"Starting OCR extraction on {tmp_path}...")
+                ocr_text = extract_keyframes_and_ocr(tmp_path)
+                print(f"OCR Extraction COMPLETE: Extracted {len(ocr_text)} characters.")
+                if ocr_text:
+                    print(f"OCR Preview: {ocr_text[:100]}...")
+            except Exception as e:
+                print(f"OCR Extraction Warning: {e}")
+
+        # ── Step 4: Generate Summary + Action Items + Decisions via Groq ──
+        ai_result = generate_summary_and_actions(full_text, ocr_text)
         summary = ai_result.get("summary", "")
         action_items = ai_result.get("action_items", [])
+        decisions = ai_result.get("decisions", [])
 
+        # Note: Added 'decisions' column to summaries table requirements.
+        # TODO (TOMORROW): Once your friend runs the SQL command in Supabase to add the 'decisions' column:
+        # ALTER TABLE summaries ADD COLUMN IF NOT EXISTS decisions JSONB DEFAULT '[]';
+        # You MUST uncomment the line below to start saving decisions!
         supabase.table("summaries").insert({
             "meeting_id": meeting_id,
             "summary": summary,
-            "action_items": json.dumps(action_items)
+            "action_items": json.dumps(action_items),
+            "decisions": json.dumps(decisions)  
         }).execute()
 
-        # ── Step 5: Embed transcript chunks into ChromaDB ─────────────────
-        num_chunks = store_transcript(meeting_id, full_text)
+        # ── Step 5: Embed transcript and OCR chunks into ChromaDB ─────────
+        num_chunks = store_transcript(meeting_id, full_text, ocr_text)
 
         # ── Step 6: Mark meeting as ready ─────────────────────────────────
         supabase.table("meetings").update(
@@ -138,7 +157,9 @@ async def upload_meeting(
             "title": title,
             "summary": summary,
             "action_items": action_items,
+            "decisions": decisions,
             "transcript_length": len(full_text),
+            "ocr_length": len(ocr_text),
             "chunks_stored": num_chunks,
             "status": "ready"
         }
@@ -212,16 +233,61 @@ async def get_meeting(meeting_id: str, authorization: str = Header(None)):
 
     summary_text = ""
     action_items = []
+    decisions = []
     if summary_row.data:
         summary_text = summary_row.data.get("summary", "")
         try:
             action_items = json.loads(summary_row.data.get("action_items", "[]"))
         except Exception:
             action_items = []
+        try:
+            decisions = json.loads(summary_row.data.get("decisions", "[]"))
+        except Exception:
+            decisions = []
 
     return {
         **meeting.data,
         "summary": summary_text,
         "action_items": action_items,
+        "decisions": decisions,
         "transcript": transcript_row.data.get("text", "") if transcript_row.data else ""
     }
+
+
+@router.delete("/{meeting_id}")
+async def delete_meeting(meeting_id: str, authorization: str = Header(None)):
+    """Delete a meeting, its vectors, and its file from storage"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing authorization token")
+    token = authorization.split(" ")[1]
+    user = get_user_from_token(token)
+
+    supabase = get_supabase()
+
+    # 1. Fetch meeting to ensure it exists and belongs to user
+    meeting = supabase.table("meetings").select("video_url").eq("id", meeting_id).eq("user_id", user["id"]).maybe_single().execute()
+    if not meeting.data:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    # 2. Extract filename from video_url to delete from storage
+    # The actual path in the bucket is: user['id']/meeting_id.ext
+    video_url = meeting.data.get("video_url")
+    if video_url:
+        try:
+            file_name = video_url.split('/')[-1]
+            storage_path = f"{user['id']}/{file_name}"
+            supabase.storage.from_("meeting-recordings").remove([storage_path])
+        except Exception as e:
+            print(f"Error deleting from storage: {e}")
+
+    # 3. Delete from database
+    # Cascades to summaries and transcripts
+    supabase.table("meetings").delete().eq("id", meeting_id).eq("user_id", user["id"]).execute()
+
+    # 4. Delete vectors from ChromaDB
+    try:
+        delete_meeting_vectors(meeting_id)
+    except Exception as e:
+        print(f"Error deleting vectors: {e}")
+
+    return {"status": "success", "message": "Meeting deleted"}

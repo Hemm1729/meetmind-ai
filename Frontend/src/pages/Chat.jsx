@@ -8,13 +8,13 @@ import api from '../lib/api'
 
 
 export default function Chat() {
-  const { user, logout }                        = useAuth()
-  const navigate                                = useNavigate()
-  const [meetings, setMeetings]                 = useState([])
-  const [activeMeeting, setActiveMeeting]       = useState(null)
-  const [showUpload, setShowUpload]             = useState(false)
-  const [loadingMeetings, setLoadingMeetings]   = useState(true)
-  const [fetchError, setFetchError]             = useState('')
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [meetings, setMeetings] = useState([])
+  const [activeMeeting, setActiveMeeting] = useState(null)
+  const [showUpload, setShowUpload] = useState(false)
+  const [loadingMeetings, setLoadingMeetings] = useState(true)
+  const [fetchError, setFetchError] = useState('')
 
 
   // ── Fetch meetings list on mount ───────────────────────────────────────
@@ -81,11 +81,11 @@ export default function Chat() {
   const handleUploadComplete = (data) => {
     // Build meeting object from upload response
     const newMeeting = {
-      id:           data.meeting_id,
-      title:        data.title,
-      status:       data.status,
-      created_at:   new Date().toISOString(),
-      summary:      data.summary,
+      id: data.meeting_id,
+      title: data.title,
+      status: data.status,
+      created_at: new Date().toISOString(),
+      summary: data.summary,
       action_items: data.action_items
     }
 
@@ -100,14 +100,28 @@ export default function Chat() {
   }
 
 
-  return (
-    <div style={{
-      display: 'flex',
-      height: '100vh',
-      overflow: 'hidden',
-      background: 'var(--bg-primary)'
-    }}>
+  // ── Delete meeting ─────────────────────────────────────────────────────
+  const handleDeleteMeeting = async (meetingId) => {
+    setFetchError('')
+    try {
+      await api.delete(`/meetings/${meetingId}`)
 
+      // Remove from list
+      setMeetings(prev => prev.filter(m => m.id !== meetingId))
+
+      // Clear active meeting if it was the deleted one
+      if (activeMeeting?.id === meetingId) {
+        setActiveMeeting(null)
+      }
+    } catch (err) {
+      console.error(err)
+      setFetchError('Failed to delete meeting.')
+    }
+  }
+
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* ── Sidebar ──────────────────────────────────────────────────── */}
       <Sidebar
         meetings={meetings}
@@ -119,188 +133,87 @@ export default function Chat() {
         loading={loadingMeetings}
       />
 
-
       {/* ── Main content area ─────────────────────────────────────────── */}
-      <main style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        position: 'relative'
-      }}>
-
+      <main className="flex-1 flex flex-col overflow-hidden relative bg-background">
         {showUpload ? (
-
           /* ── Upload Panel ──────────────────────────────────────────── */
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'auto'
-          }}>
-
+          <div className="flex-1 flex flex-col overflow-y-auto w-full animate-fade-in">
             {/* Upload panel header */}
-            <div style={{
-              padding: '16px 28px',
-              borderBottom: '1px solid var(--border)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 16,
-              flexShrink: 0
-            }}>
+            <div className="px-8 py-5 border-b border-slate-800 flex items-center gap-4 shrink-0 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
               <button
                 onClick={() => setShowUpload(false)}
-                style={{
-                  background: 'var(--bg-hover)',
-                  border: '1px solid var(--border-bright)',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)',
-                  fontSize: 13,
-                  padding: '6px 12px',
-                  fontFamily: 'DM Sans',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 6
-                }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-400 hover:text-white text-sm font-medium transition-colors"
               >
-                ← Back
+                &larr; Back
               </button>
-              <h2 style={{
-                fontSize: 16, fontWeight: 600,
-                color: 'var(--text-primary)'
-              }}>
+              <h2 className="text-lg font-semibold text-white">
                 Upload Meeting Recording
               </h2>
             </div>
 
             {/* Upload panel body */}
-            <div style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              padding: '40px 28px'
-            }}>
-
+            <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-12">
               {/* Title */}
-              <div style={{ textAlign: 'center', marginBottom: 36 }}>
-                <h3 style={{
-                  fontSize: 20, fontWeight: 600,
-                  color: 'var(--text-primary)', marginBottom: 8
-                }}>
+              <div className="text-center mb-10 animate-slide-up" style={{ animationDelay: '100ms' }}>
+                <h3 className="text-2xl font-bold text-white mb-3">
                   New Meeting
                 </h3>
-                <p style={{
-                  color: 'var(--text-secondary)',
-                  fontSize: 13, maxWidth: 420, margin: '0 auto'
-                }}>
+                <p className="text-slate-400 text-sm max-w-[420px] mx-auto leading-relaxed">
                   Upload any recording and AI will transcribe, summarize,
                   extract action items, and make it fully searchable.
                 </p>
               </div>
 
               {/* Upload component */}
-              <UploadMeeting onUploadComplete={handleUploadComplete} />
+              <div className="w-full max-w-2xl animate-slide-up" style={{ animationDelay: '200ms' }}>
+                <UploadMeeting onUploadComplete={handleUploadComplete} />
+              </div>
 
               {/* Processing pipeline info card */}
-              <div style={{
-                maxWidth: 480,
-                margin: '36px auto 0',
-                padding: '20px 24px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: 14
-              }}>
-                <p style={{
-                  fontSize: 11, fontWeight: 600,
-                  color: 'var(--text-muted)',
-                  marginBottom: 14,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em'
-                }}>
+              <div className="w-full max-w-[480px] mt-12 p-6 glass-card rounded-2xl animate-slide-up" style={{ animationDelay: '300ms' }}>
+                <p className="text-xs font-semibold text-slate-500 mb-5 uppercase tracking-widest">
                   What happens after upload
                 </p>
 
                 {[
-                  { icon: '🎵', label: 'Audio extraction',        sub: 'ffmpeg strips audio from video' },
-                  { icon: '🗣️', label: 'Transcription',           sub: 'Whisper converts speech to text' },
-                  { icon: '🤖', label: 'Summary & action items',  sub: 'Groq Llama3 analyzes the transcript' },
-                  { icon: '🔍', label: 'Semantic search index',   sub: 'ChromaDB stores embeddings locally' },
+                  { icon: '🎵', label: 'Audio extraction', sub: 'ffmpeg strips audio from video' },
+                  { icon: '🗣️', label: 'Transcription', sub: 'Whisper converts speech to text' },
+                  { icon: '🤖', label: 'Summary & action items', sub: 'Groq Llama3 analyzes the transcript' },
+                  { icon: '🔍', label: 'Semantic search index', sub: 'ChromaDB stores embeddings locally' },
                 ].map(({ icon, label, sub }, i, arr) => (
-                  <div key={i} style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 14,
-                    marginBottom: i < arr.length - 1 ? 14 : 0,
-                    paddingBottom: i < arr.length - 1 ? 14 : 0,
-                    borderBottom: i < arr.length - 1
-                      ? '1px solid var(--border)'
-                      : 'none'
-                  }}>
-                    <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
+                  <div key={i} className={`flex items-start gap-4 ${i < arr.length - 1 ? 'mb-4 pb-4 border-b border-slate-800/50' : ''}`}>
+                    <span className="text-2xl shrink-0">{icon}</span>
                     <div>
-                      <div style={{
-                        fontSize: 13, fontWeight: 500,
-                        color: 'var(--text-primary)',
-                        marginBottom: 2
-                      }}>{label}</div>
-                      <div style={{
-                        fontSize: 11,
-                        color: 'var(--text-muted)'
-                      }}>{sub}</div>
+                      <div className="text-sm font-medium text-slate-200 mb-0.5">{label}</div>
+                      <div className="text-xs text-slate-500">{sub}</div>
                     </div>
                   </div>
                 ))}
               </div>
-
             </div>
           </div>
-
         ) : (
-
           /* ── Chat Window ───────────────────────────────────────────── */
           <ChatWindow
             meeting={activeMeeting}
             onShowUpload={handleNewMeeting}
+            onDeleteMeeting={handleDeleteMeeting}
           />
-
         )}
-
 
         {/* Global fetch error toast */}
         {fetchError && (
-          <div style={{
-            position: 'absolute',
-            bottom: 24, left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(239,68,68,0.1)',
-            border: '1px solid rgba(239,68,68,0.2)',
-            borderRadius: 10,
-            padding: '10px 18px',
-            color: '#f87171',
-            fontSize: 13,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            zIndex: 100
-          }}>
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-3 text-red-400 text-sm flex items-center gap-3 z-[100] shadow-lg shadow-red-500/5 animate-slide-up">
             <span>⚠️</span>
             <span>{fetchError}</span>
             <button
               onClick={fetchMeetings}
-              style={{
-                background: 'none', border: 'none',
-                color: '#f87171', cursor: 'pointer',
-                textDecoration: 'underline',
-                fontSize: 13, fontFamily: 'DM Sans'
-              }}
+              className="ml-2 text-red-400 hover:text-red-300 underline font-medium transition-colors"
             >
               Retry
             </button>
           </div>
         )}
-
       </main>
     </div>
   )

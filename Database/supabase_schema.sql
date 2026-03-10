@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS summaries (
   meeting_id   UUID NOT NULL REFERENCES meetings(id) ON DELETE CASCADE UNIQUE,
   summary      TEXT,
   action_items JSONB DEFAULT '[]',
+  decisions    JSONB DEFAULT '[]',
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 

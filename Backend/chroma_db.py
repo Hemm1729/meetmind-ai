@@ -49,10 +49,10 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]
     return chunks
 
 
-def store_transcript(meeting_id: str, transcript_text: str) -> int:
+def store_transcript(meeting_id: str, transcript_text: str, ocr_text: str = "") -> int:
     """
-    Chunk the transcript and store embeddings in ChromaDB.
-    Returns number of chunks stored.
+    Chunk the transcript and OCR text, then store embeddings in ChromaDB.
+    Returns number of total chunks stored.
     """
     collection = get_or_create_collection(meeting_id)
 
@@ -65,6 +65,29 @@ def store_transcript(meeting_id: str, transcript_text: str) -> int:
         pass
 
     chunks = chunk_text(transcript_text)
+    
+    # Process visual slide/OCR text if provided
+    if ocr_text:
+        # Split OCR text roughly by slide blocks
+        slide_chunks = []
+        import re
+        # Assuming ocr text uses [SLIDE X] as a delimiter block from video_processor
+        raw_slides = re.split(r'(\[SLIDE \d+\]:\n)', ocr_text)
+        
+        current_slide = ""
+        for part in raw_slides:
+            if part.startswith("[SLIDE"):
+                if current_slide:
+                    slide_chunks.append(current_slide.strip())
+                current_slide = part
+            else:
+                current_slide += part
+                
+        if current_slide:
+            slide_chunks.append(current_slide.strip())
+            
+        chunks.extend(slide_chunks)
+
     if not chunks:
         return 0
 
