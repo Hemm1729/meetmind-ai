@@ -12,16 +12,13 @@ def get_groq_client() -> Groq:
 
 def generate_summary_and_actions(transcript: str, ocr_text: str = "") -> dict:
     """
-    Use Groq Llama3 to generate a summary + action items + decisions from transcript and visual slides.
+    Use Groq Llama3 to generate a profound, highly structured meeting intelligence brief.
     Called once after transcription and OCR is done.
     """
     client = get_groq_client()
 
-    prompt = f"""You are an expert meeting analyst. Analyze the following meeting transcript and presentation slide text, then provide:
-
-1. A concise summary (3-5 sentences) of what was discussed.
-2. A list of action items with assignee and deadline if mentioned.
-3. A list of key decisions made during the meeting.
+    prompt = f"""You are an elite Executive Meeting Analyst for a Fortune 500 company. 
+Your goal is to extract the absolute best, most profound intelligence from this meeting transcript and visual slide data. Make your analysis better, more structured, and more detailed than platforms like Spinach.ai or Otter.ai.
 
 Transcript (Spoken words):
 {transcript[:8000]}
@@ -29,27 +26,28 @@ Transcript (Spoken words):
 Slide Text (Shown on screen):
 {ocr_text[:4000] if ocr_text else 'No visual slides presented.'}
 
-Respond in this exact JSON format:
+Respond in this exact JSON format. The "summary" field must be a heavily detailed, beautifully formatted Markdown string containing these specific sections: 🎯 Executive Goal, 🧠 Deep Insights & Sentiments, 📊 Visual/Slide Analysis (if slides exist), and 📝 Comprehensive Notes. 
+
 {{
-  "summary": "...",
+  "summary": "### 🎯 Executive Goal\\n...\\n\\n### 🧠 Deep Insights & Sentiments\\n...\\n\\n### 📊 Visual & Slide Analysis\\n...\\n\\n### 📝 Comprehensive Notes\\n- Point 1\\n- Point 2",
   "action_items": [
-    {{"task": "...", "assignee": "...", "deadline": "..."}}
+    {{"task": "Highly detailed task description...", "assignee": "...", "deadline": "..."}}
   ],
   "decisions": [
-    "Decision 1",
-    "Decision 2"
+    "Decision 1 with rich contextual reasoning behind it.",
+    "Decision 2..."
   ]
 }}
 
-If no assignee or deadline is mentioned, use "Unassigned" and "Not specified".
-If no decisions were explicitly made, return an empty array for decisions [].
-Return ONLY valid JSON, no extra text."""
+Ensure your "summary" Markdown uses bolding, bullet points, and emojis to make it highly readable and visually impressive. 
+If no assignee/deadline, write "Unassigned" / "Not specified".
+Return ONLY valid JSON, absolutely no extra text before or after."""
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",  # Free model on Groq
+        model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3,
-        max_tokens=1024,
+        max_tokens=2500,
     )
 
     text = response.choices[0].message.content.strip()

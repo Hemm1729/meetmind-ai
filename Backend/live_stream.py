@@ -11,6 +11,9 @@ from chroma_db import store_live_chunk, retrieve_live_chunks
 from groq_client import generate_live_answer
 import asyncio
 import subprocess
+import imageio_ffmpeg
+
+ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
 
 router = APIRouter()
 
@@ -42,7 +45,7 @@ def process_chunk_blocking(chunk_data: bytes, session_id: str, timestamp: str) -
         # 1. Extract audio robustly (ignores missing video track if tab is static 0fps)
         # We use -fflags +genpts to regenerate missing timestamps from Chrome's WebM chunks
         subprocess.run([
-            "ffmpeg", "-y", "-err_detect", "ignore_err", "-loglevel", "error",
+            ffmpeg_path, "-y", "-err_detect", "ignore_err", "-loglevel", "error",
             "-fflags", "+genpts",
             "-i", webm_path,
             "-vn", "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1",
@@ -67,7 +70,7 @@ def process_chunk_blocking(chunk_data: bytes, session_id: str, timestamp: str) -
                 mp4_path = webm_path.replace(".webm", ".mp4")
                 # Transcode WebM chunk to MP4 aggressively so OpenCV can read it without EBML index errors
                 subprocess.run([
-                    "ffmpeg", "-y", "-err_detect", "ignore_err", "-loglevel", "error",
+                    ffmpeg_path, "-y", "-err_detect", "ignore_err", "-loglevel", "error",
                     "-i", webm_path,
                     "-c:v", "libx264", "-preset", "ultrafast", "-an",
                     mp4_path

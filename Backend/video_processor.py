@@ -6,7 +6,12 @@ import io
 
 # Tesseract executable is typically installed here on Windows by UB Mannheim installer.
 # We set this so `pytesseract` can find it easily.
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+TESSERACT_PATH = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if os.path.exists(TESSERACT_PATH):
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+else:
+    print(f"Warning: Tesseract not found at {TESSERACT_PATH}. OCR will be disabled.")
+
 
 def extract_keyframes_and_ocr(video_path: str, diff_threshold: float = 15.0) -> str:
     """
@@ -84,6 +89,9 @@ def _ocr_frame(gray_frame) -> str:
     Helper function to run Tesseract OCR on a grayscale OpenCV frame.
     Applies preprocessing (scaling and thresholding) to improve accuracy.
     """
+    if not os.path.exists(TESSERACT_PATH):
+        return ""
+
     try:
         # 1. Upscale the image (makes text larger for Tesseract to read)
         # Using cubic interpolation which is good for text
